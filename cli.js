@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 'use strict';
 
 const fs = require('fs');
@@ -42,7 +41,6 @@ function main() {
     return;
   }
 
-  // run
   const script = new vm.Script(js, { filename: file });
   const context = vm.createContext({ console, Math, JSON, Array, Object, String, Number, Boolean });
   script.runInContext(context);
