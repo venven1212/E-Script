@@ -25,8 +25,6 @@ function parse(tokens) {
   function skipNewlines() { while (at('NEWLINE')) advance(); }
   function skipStatementSep() { while (atAny('NEWLINE')) advance(); }
 
-  // ---------------- program ----------------
-
   function parseProgram() {
     const body = [];
     skipNewlines();
@@ -36,8 +34,6 @@ function parse(tokens) {
     }
     return { type: 'Program', body };
   }
-
-  // ---------------- statements ----------------
 
   function parseStatement() {
     if (at('LET') || at('CONST')) return parseVarDecl();
@@ -56,7 +52,7 @@ function parse(tokens) {
   }
 
   function parseVarDecl() {
-    const kindTok = advance(); // LET or CONST
+    const kindTok = advance();
     const kind = kindTok.type.toLowerCase();
     const name = at('{') ? parseObjectPattern() : expect('IDENT', 'variable name').value;
     let init = null;
@@ -67,8 +63,6 @@ function parse(tokens) {
     return { type: 'VarDecl', kind, name, init, line: kindTok.line };
   }
 
-  // Simple object destructuring: { a, b, c } — no renaming, defaults, or
-  // nesting in v0.1. Covers the "const { ok, data } = await ..." pattern.
   function parseObjectPattern() {
     expect('{');
     const keys = [];
@@ -92,7 +86,7 @@ function parse(tokens) {
   }
 
   function parseFuncDecl(isAsync) {
-    const tok = advance(); // FUNC
+    const tok = advance();
     const name = expect('IDENT', 'function name').value;
     const params = parseParamList();
     if (at('=>')) {
@@ -117,7 +111,7 @@ function parse(tokens) {
   }
 
   function parseIf() {
-    const tok = advance(); // IF
+    const tok = advance();
     const test = parseExpression();
     const consequent = parseBlock();
     let alternate = null;
@@ -129,8 +123,6 @@ function parse(tokens) {
     }
     return { type: 'If', test, consequent, alternate, line: tok.line };
 
-    // Allows `}\nelse {` — peek past newlines only when ELSE actually follows,
-    // so a plain if-block on its own isn't forced to consume trailing blank lines.
     function skipNewlines_ifElseFollows() {
       let lookahead = 0;
       while (peek(lookahead).type === 'NEWLINE') lookahead += 1;
@@ -170,8 +162,6 @@ function parse(tokens) {
     return { type: 'Return', argument, line: tok.line };
   }
 
-  // ---------------- expressions (precedence climbing) ----------------
-
   function parseExpression() { return parseAssignment(); }
 
   function parseAssignment() {
@@ -184,8 +174,6 @@ function parse(tokens) {
     return left;
   }
 
-  // Arrow functions: (a, b) => expr  |  (a, b) => { block }  |  a => expr
-  // Optionally prefixed with 'async'.
   function parseArrowOrLogicalOr() {
     const start = pos;
     const isAsync = at('ASYNC');
