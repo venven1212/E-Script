@@ -1,0 +1,35 @@
+{
+  "name": "escript-lang",
+  "version": "0.1.0",
+  "description": "A friendlier language that transpiles to JavaScript.",
+  "bin": {
+    "escript": "cli.js"
+  },
+  "main": "index.js",
+  "files": [
+    "cli.js",
+    "index.js",
+    "lexer.js",
+    "parser.js",
+    "codegen.js",
+    "README.md"
+  ],
+  "scripts": {
+    "build:binary": "node scripts/build-binary.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/venven1212/E-Script.git"
+  },
+  "keywords": [
+    "escript",
+    "language",
+    "transpiler",
+    "compiler",
+    "cli"
+  ],
+  "license": "ISC"
+}
