@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E-script — JavaScript, minus the ceremony</title>
+<meta name="description" content="A small language that transpiles to JavaScript. Download the escript CLI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --canvas:#EEF3ED;
+    --canvas-raised:#FFFFFF;
+    --ink:#16211D;
+    --ink-soft:#4A5750;
+    --brand:#3E8763;
+    --brand-deep:#2C6B4B;
+    --gold:#DDA53B;
+    --code-bg:#16211D;
+    --code-fg:#D9E6DD;
+    --line:#D3DED6;
+    --radius:14px;
+    --max:1080px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--canvas);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    line-height:1.08;
+    margin:0 0 .4em;
+    letter-spacing:-0.01em;
+  }
+  a{color:inherit;}
+  code, .mono{font-family:'IBM Plex Mono', monospace;}
+  .wrap{max-width:var(--max); margin:0 auto; padding:0 28px;}
+  :focus-visible{outline:3px solid var(--brand); outline-offset:3px; border-radius:4px;}
+
+  /* ---- nav ---- */
+  nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 0;
+  }
+  .brand{
+    font-family:'Fraunces', serif; font-weight:600; font-size:1.3rem;
+    display:flex; align-items:baseline; gap:2px; text-decoration:none;
+  }
+  .brand .dot{color:var(--brand); font-size:1.4rem;}
+  .navlink{
+    font-size:.92rem; text-decoration:none; color:var(--ink-soft);
+    border-bottom:1px solid transparent;
+  }
+  .navlink:hover{color:var(--ink); border-color:var(--ink-soft);}
+
+  /* ---- hero ---- */
+  header.hero{padding:64px 0 40px;}
+  .eyebrow{
+    display:inline-block; font-family:'IBM Plex Mono', monospace; font-size:.78rem;
+    letter-spacing:.06em; text-transform:uppercase; color:var(--brand-deep);
+    background:#DFEEE4; padding:5px 11px; border-radius:100px; margin-bottom:20px;
+  }
+  h1.headline{font-size:clamp(2.3rem, 5vw, 3.7rem); max-width:15ch;}
+  h1.headline em{font-style:normal; color:var(--brand-deep);}
+  .sub{font-size:1.14rem; color:var(--ink-soft); max-width:46ch; margin:18px 0 34px;}
+
+  .download-row{display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-bottom:10px;}
+  .btn-primary{
+    display:inline-flex; align-items:center; gap:10px;
+    background:var(--ink); color:#fff; text-decoration:none;
+    font-weight:500; font-size:1rem; padding:14px 22px; border-radius:10px;
+    border:1px solid var(--ink); cursor:pointer;
+    transition:transform .12s ease, background .12s ease;
+  }
+  .btn-primary:hover{background:var(--brand-deep); border-color:var(--brand-deep); transform:translateY(-1px);}
+  .btn-primary svg{flex:none;}
+  .btn-primary .sub-label{display:block; font-size:.72rem; font-weight:400; opacity:.75; font-family:'IBM Plex Mono',monospace;}
+  details.platforms{position:relative; font-size:.92rem;}
+  details.platforms summary{
+    list-style:none; cursor:pointer; color:var(--ink-soft); padding:14px 4px;
+    border-bottom:1px dashed var(--line);
+  }
+  details.platforms summary::-webkit-details-marker{display:none;}
+  details.platforms summary:hover{color:var(--ink);}
+  .platform-menu{
+    display:flex; flex-direction:column; gap:2px; margin-top:8px;
+  }
+  .platform-menu a{
+    text-decoration:none; font-family:'IBM Plex Mono', monospace; font-size:.85rem;
+    color:var(--ink-soft); padding:6px 4px; border-radius:6px;
+  }
+  .platform-menu a:hover{background:var(--canvas-raised); color:var(--ink);}
+  .hint{font-size:.85rem; color:var(--ink-soft); margin-top:6px;}
+  .hint code{background:var(--canvas-raised); padding:1px 6px; border-radius:5px; border:1px solid var(--line);}
+
+  /* ---- transpile signature ---- */
+  .transpile{
+    margin-top:56px; border-radius:var(--radius); overflow:hidden;
+    border:1px solid var(--line); background:var(--canvas-raised);
+    display:grid; grid-template-columns:1fr 1fr;
+  }
+  @media (max-width:720px){ .transpile{grid-template-columns:1fr;} }
+  .pane{padding:0;}
+  .pane-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:11px 18px; font-family:'IBM Plex Mono', monospace; font-size:.76rem;
+    letter-spacing:.04em; text-transform:uppercase;
+  }
+  .pane.source{background:var(--canvas-raised); color:var(--ink-soft); border-right:1px solid var(--line);}
+  .pane.compiled{background:var(--code-bg); color:#8BA898;}
+  .pane pre{
+    margin:0; padding:20px 18px 26px; font-family:'IBM Plex Mono', monospace;
+    font-size:.87rem; line-height:1.65; white-space:pre-wrap; min-height:210px;
+  }
+  .pane.source pre{color:var(--ink);}
+  .pane.compiled pre{color:var(--code-fg);}
+  .cursor{display:inline-block; width:7px; height:1em; background:var(--brand); vertical-align:text-bottom; animation:blink 1s steps(1) infinite;}
+  @keyframes blink{50%{opacity:0;}}
+  @media (prefers-reduced-motion: reduce){ .cursor{animation:none;} }
+
+  /* ---- install methods ---- */
+  section.install{padding:72px 0 20px;}
+  .section-head{max-width:52ch; margin-bottom:34px;}
+  .section-head .eyebrow{margin-bottom:14px;}
+  .tabs{display:flex; gap:6px; margin-bottom:0; border-bottom:1px solid var(--line);}
+  .tab{
+    font-family:'IBM Plex Mono', monospace; font-size:.85rem; background:none; border:none;
+    padding:11px 16px; cursor:pointer; color:var(--ink-soft); border-bottom:2px solid transparent;
+    margin-bottom:-1px;
+  }
+  .tab[aria-selected="true"]{color:var(--ink); border-color:var(--brand); font-weight:500;}
+  .tab:hover{color:var(--ink);}
+  .panel{display:none; padding:22px 0 0;}
+  .panel.active{display:block;}
+  .term{
+    background:var(--code-bg); color:var(--code-fg); border-radius:10px;
+    padding:18px 20px; font-family:'IBM Plex Mono', monospace; font-size:.87rem;
+    position:relative; overflow-x:auto;
+  }
+  .term .l{display:block; white-space:pre;}
+  .term .l::before{content:"$ "; color:#6E8A78;}
+  .term .c{color:#8BA898;}
+  .term .c::before{content:"# "; }
+  .copy-btn{
+    position:absolute; top:12px; right:12px; background:#243530; color:#C9D8CD;
+    border:1px solid #33463E; font-family:'IBM Plex Mono',monospace; font-size:.72rem;
+    padding:5px 10px; border-radius:6px; cursor:pointer;
+  }
+  .copy-btn:hover{background:#2F433C;}
+
+  /* ---- tour ---- */
+  section.tour{padding:76px 0;}
+  .tour-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:18px; margin-top:30px;}
+  @media (max-width:720px){ .tour-grid{grid-template-columns:1fr;} }
+  .tour-card{
+    background:var(--canvas-raised); border:1px solid var(--line); border-radius:var(--radius);
+    padding:20px 22px;
+  }
+  .tour-card h3{font-family:'IBM Plex Mono', monospace; font-size:.82rem; text-transform:uppercase;
+    letter-spacing:.04em; font-weight:500; color:var(--brand-deep); margin-bottom:12px;}
+  .tour-card pre{margin:0; font-family:'IBM Plex Mono', monospace; font-size:.85rem; line-height:1.6; color:var(--ink); white-space:pre-wrap;}
+  .tour-card .cm{color:#8B9890;}
+
+  footer{border-top:1px solid var(--line); padding:34px 0 46px; margin-top:40px;}
+  .foot-row{display:flex; flex-wrap:wrap; gap:18px; justify-content:space-between; align-items:center; font-size:.86rem; color:var(--ink-soft);}
+  .foot-links{display:flex; gap:18px;}
+  .foot-links a{text-decoration:none;}
+  .foot-links a:hover{color:var(--ink);}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <a class="brand" href="#top"><span>e</span><span class="dot">·</span><span>script</span></a>
+    <div style="display:flex; gap:22px; align-items:center;">
+      <a class="navlink" href="#install">Install</a>
+      <a class="navlink" href="#tour">Language tour</a>
+      <a class="navlink" href="https://github.com/venven1212/E-Script">GitHub</a>
+    </div>
+  </nav>
+</div>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <span class="eyebrow">v0.1 · compiles to plain JS</span>
+    <h1 class="headline">JavaScript, <em>minus the ceremony.</em></h1>
+    <p class="sub">A small language that trims away the punctuation while keeping everything JS can do underneath. No runtime, no lock-in — <code class="mono">escript build</code> hands you a plain .js file anyone can run.</p>
+
+    <div class="download-row">
+      <button class="btn-primary" id="primary-download">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v9.5M8 10.5L4.5 7M8 10.5L11.5 7" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12.5V14a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-1.5" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span>
+          <span id="primary-label">Download for macOS</span>
+          <span class="sub-label" id="primary-sub">Apple Silicon · no Node required</span>
+        </span>
+      </button>
+      <details class="platforms">
+        <summary>Other platforms ▾</summary>
+        <div class="platform-menu">
+          <a href="https://github.com/venven1212/E-Script/releases/latest/download/escript-darwin-arm64">macOS — Apple Silicon</a>
+          <a href="https://github.com/venven1212/E-Script/releases/latest/download/escript-darwin-x64">macOS — Intel</a>
+          <a href="https://github.com/venven1212/E-Script/releases/latest/download/escript-linux-x64">Linux — x64</a>
+          <a href="https://github.com/venven1212/E-Script/releases/latest/download/escript-win32-x64.exe">Windows — x64</a>
+        </div>
+      </details>
+    </div>
+    <p class="hint">Prefer a one-liner? <code>curl -fsSL https://raw.githubusercontent.com/venven1212/E-Script/main/install.sh | sh</code></p>
+
+    <div class="transpile">
+      <div class="pane source">
+        <div class="pane-head">yourfile.es</div>
+        <pre id="src-pane"></pre>
+      </div>
+      <div class="pane compiled">
+        <div class="pane-head">↳ compiled .js</div>
+        <pre id="out-pane"></pre>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="install" id="install">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Install</span>
+      <h2 style="font-size:1.9rem;">Three ways in</h2>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-panel="binary">Standalone binary</button>
+      <button class="tab" role="tab" aria-selected="false" data-panel="npm">npm</button>
+      <button class="tab" role="tab" aria-selected="false" data-panel="source">From source</button>
+    </div>
+
+    <div class="panel active" id="panel-binary">
+      <div class="term">
+        <button class="copy-btn" data-copy="curl -fsSL https://raw.githubusercontent.com/venven1212/E-Script/main/install.sh | sh">Copy</button>
+        <span class="c">macOS / Linux</span>
+        <span class="l">curl -fsSL https://raw.githubusercontent.com/venven1212/E-Script/main/install.sh | sh</span>
+      </div>
+      <p class="hint" style="margin-top:14px;">Windows (PowerShell): <code>irm https://raw.githubusercontent.com/venven1212/E-Script/main/install.ps1 | iex</code></p>
+      <p class="hint">Node is bundled into the executable — nothing else to install.</p>
+    </div>
+
+    <div class="panel" id="panel-npm">
+      <div class="term">
+        <button class="copy-btn" data-copy="npm install -g escript-lang">Copy</button>
+        <span class="l">npm install -g escript-lang</span>
+      </div>
+      <p class="hint" style="margin-top:14px;">Requires Node ≥ 18. Installs the <code>escript</code> command globally.</p>
+    </div>
+
+    <div class="panel" id="panel-source">
+      <div class="term">
+        <button class="copy-btn" data-copy="git clone https://github.com/venven1212/E-Script.git
+cd E-Script
+npm link">Copy</button>
+        <span class="l">git clone https://github.com/venven1212/E-Script.git</span>
+        <span class="l">cd E-Script</span>
+        <span class="l">npm link</span>
+      </div>
+    </div>
+
+    <p class="hint" style="margin-top:26px;">Once installed: <code>escript run yourfile.es</code> to execute, or <code>escript build yourfile.es</code> to emit plain JS.</p>
+  </div>
+</section>
+
+<section class="tour" id="tour">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Language tour</span>
+      <h2 style="font-size:1.9rem;">What it feels like</h2>
+    </div>
+    <div class="tour-grid">
+      <div class="tour-card">
+        <h3>Interpolation, no concatenation</h3>
+        <pre>let name = "Venny"
+print("Hello, {name}!")</pre>
+      </div>
+      <div class="tour-card">
+        <h3>Readable booleans</h3>
+        <pre>let ready = true and not false
+<span class="cm">// same as: true && !false</span></pre>
+      </div>
+      <div class="tour-card">
+        <h3>One-line functions</h3>
+        <pre>func square(x) => x * x
+<span class="cm">// implicit return, no braces needed</span></pre>
+      </div>
+      <div class="tour-card">
+        <h3>Conditions without parens</h3>
+        <pre>if score > 90 {
+  print("A")
+} else {
+  print("B")
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-row">
+    <span>E-script v0.1 · ISC license</span>
+    <div class="foot-links">
+      <a href="https://github.com/venven1212/E-Script">GitHub</a>
+      <a href="https://github.com/venven1212/E-Script/releases">Releases</a>
+      <a href="https://www.npmjs.com/package/escript-lang">npm</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ---- OS-aware primary download button ----
+  (function(){
+    var ua = navigator.userAgent || '';
+    var plat = (navigator.platform || '') + ' ' + ua;
+    var label = document.getElementById('primary-label');
+    var sub = document.getElementById('primary-sub');
+    var btn = document.getElementById('primary-download');
+    var base = 'https://github.com/venven1212/E-Script/releases/latest/download/';
+    var asset = 'escript-linux-x64';
+    var text = 'Download for Linux', subtext = 'x64 · no Node required';
+
+    if (/Mac/i.test(plat)) {
+      var isAppleSilicon = /Mac/.test(plat) && ua.indexOf('Intel') === -1;
+      // best-effort: most modern Macs visiting today are Apple Silicon
+      asset = isAppleSilicon ? 'escript-darwin-arm64' : 'escript-darwin-x64';
+      text = 'Download for macOS';
+      subtext = (isAppleSilicon ? 'Apple Silicon' : 'Intel') + ' · no Node required';
+    } else if (/Win/i.test(plat)) {
+      asset = 'escript-win32-x64.exe';
+      text = 'Download for Windows';
+      subtext = 'x64 · no Node required';
+    } else if (/Linux/i.test(plat)) {
+      text = 'Download for Linux';
+      subtext = 'x64 · no Node required';
+    }
+
+    label.textContent = text;
+    sub.textContent = subtext;
+    btn.addEventListener('click', function(){
+      window.location.href = base + asset;
+    });
+  })();
+
+  // ---- tabs ----
+  document.querySelectorAll('.tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(t){ t.setAttribute('aria-selected', 'false'); });
+      document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+      tab.setAttribute('aria-selected', 'true');
+      document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+    });
+  });
+
+  // ---- copy buttons ----
+  document.querySelectorAll('.copy-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      navigator.clipboard.writeText(btn.dataset.copy).then(function(){
+        var orig = btn.textContent;
+        btn.textContent = 'Copied';
+        setTimeout(function(){ btn.textContent = orig; }, 1400);
+      });
+    });
+  });
+
+  // ---- signature: live transpile typewriter ----
+  (function(){
+    var src = 'func greet(name) {\n  return "Hi, {name}!"\n}\n\nlet friends = ["Ada", "Grace"]\nfor person in friends {\n  print(greet(person))\n}';
+    var out = 'function greet(name) {\n  return `Hi, ${name}!`;\n}\n\nlet friends = ["Ada", "Grace"];\nfor (const person of friends) {\n  console.log(greet(person));\n}';
+    var srcEl = document.getElementById('src-pane');
+    var outEl = document.getElementById('out-pane');
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reduced) {
+      srcEl.textContent = src;
+      outEl.textContent = out;
+      return;
+    }
+
+    var i = 0, phase = 'src', pauseUntil = 0;
+    function tick(ts){
+      if (ts < pauseUntil) { requestAnimationFrame(tick); return; }
+      if (phase === 'src') {
+        srcEl.innerHTML = escapeHtml(src.slice(0, i)) + '<span class="cursor"></span>';
+        i++;
+        if (i > src.length) { phase = 'out'; i = 0; pauseUntil = ts + 500; srcEl.innerHTML = escapeHtml(src); }
+      } else if (phase === 'out') {
+        outEl.innerHTML = escapeHtml(out.slice(0, i)) + '<span class="cursor"></span>';
+        i++;
+        if (i > out.length) { phase = 'hold'; pauseUntil = ts + 2600; outEl.innerHTML = escapeHtml(out); }
+      } else if (phase === 'hold') {
+        phase = 'reset'; pauseUntil = ts + 300;
+      } else if (phase === 'reset') {
+        srcEl.textContent = ''; outEl.textContent = '';
+        phase = 'src'; i = 0;
+      }
+      requestAnimationFrame(tick);
+    }
+    function escapeHtml(s){
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    requestAnimationFrame(tick);
+  })();
+</script>
+
+</body>
+</html>

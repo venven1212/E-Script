@@ -1,0 +1,64 @@
+name: Release
+
+# Push a tag like "v0.2.0" to trigger a build + release.
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            asset: escript-linux-x64
+          - os: macos-13       # Intel
+            asset: escript-darwin-x64
+          - os: macos-14       # Apple Silicon
+            asset: escript-darwin-arm64
+          - os: windows-latest
+            asset: escript-win32-x64.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/build-binary.js --out dist
+      - name: Rename output
+        shell: bash
+        run: |
+          if [ -f dist/escript.exe ]; then mv dist/escript.exe "dist/${{ matrix.asset }}"; fi
+          if [ -f dist/escript ]; then mv dist/escript "dist/${{ matrix.asset }}"; fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: dist/${{ matrix.asset }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
+
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
