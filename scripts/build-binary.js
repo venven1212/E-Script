@@ -38,6 +38,9 @@ function run(cmd, args, opts = {}) {
   execFileSync(cmd, args, { stdio: 'inherit', ...opts });
 }
 
+// Windows needs the .cmd shim's exact name to resolve npx/npm without a shell.
+const npx = isWin ? 'npx.cmd' : 'npx';
+
 fs.mkdirSync(buildDir, { recursive: true });
 fs.mkdirSync(outDir, { recursive: true });
 
@@ -45,7 +48,7 @@ fs.mkdirSync(outDir, { recursive: true });
 //    SEA embeds a single script, so multi-file `require('./lexer')` calls
 //    need to be resolved and inlined ahead of time.
 console.log('\n[1/4] Bundling with esbuild...');
-run('npx', [
+run(npx, [
   '--yes', 'esbuild', 'cli.js',
   '--bundle', '--platform=node', '--format=cjs',
   '--outfile=build/bundle.cjs',
@@ -75,7 +78,7 @@ const postjectArgs = [
   '--sentinel-fuse', 'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2',
 ];
 if (platform === 'darwin') postjectArgs.push('--macho-segment-name', 'NODE_SEA');
-run('npx', postjectArgs, { cwd: root });
+run(npx, postjectArgs, { cwd: root });
 
 if (platform === 'darwin') {
   try {
