@@ -1,6 +1,6 @@
 'use strict';
 
-const RESERVED_JS_ONLY = new Set(['print']); // E-script builtins mapped to JS equivalents
+const RESERVED_JS_ONLY = new Set(['print']);
 
 function generate(program) {
   return program.body.map((stmt) => genStatement(stmt, 0)).join('\n');
