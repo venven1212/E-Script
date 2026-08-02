@@ -6,8 +6,6 @@ const KEYWORDS = new Set([
   'async', 'await',
 ]);
 
-// Multi-char operators must be listed longest-first so the lexer prefers them
-// over their shorter prefixes (e.g. '==' before '=').
 const OPERATORS = [
   '...', '=>', '==', '!=', '<=', '>=', '&&', '||', '+=', '-=', '*=', '/=',
   '+', '-', '*', '/', '%', '=', '<', '>', '!', '(', ')', '{', '}', '[', ']',
@@ -39,18 +37,16 @@ function tokenize(source) {
     if (ch === '\n') { tokens.push({ type: 'NEWLINE', line }); line += 1; i += 1; continue; }
     if (ch === ' ' || ch === '\t' || ch === '\r') { i += 1; continue; }
 
-    // Comments: // ... or # ... to end of line
     if (ch === '#' || (ch === '/' && peek(1) === '/')) {
       while (i < n && source[i] !== '\n') i += 1;
       continue;
     }
 
-    // Strings: double-quoted allow {expr} interpolation, single-quoted are literal.
     if (ch === '"' || ch === "'") {
       const quote = ch;
       const startLine = line;
       i += 1;
-      const parts = []; // array of { text } or { expr: tokens[] }
+      const parts = [];
       let buf = '';
       while (i < n && source[i] !== quote) {
         if (source[i] === '\\' && i + 1 < n) {
@@ -81,7 +77,7 @@ function tokenize(source) {
         i += 1;
       }
       if (i >= n) throw new EscriptSyntaxError('unterminated string', startLine);
-      i += 1; // closing quote
+      i += 1;
       parts.push({ text: buf });
       tokens.push({ type: 'STRING', parts, line: startLine });
       continue;
