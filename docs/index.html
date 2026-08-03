@@ -7,11 +7,11 @@
 <title>E-script — a programming language for people who find JavaScript confusing</title>
 <meta name="description" content="E-script is a small, beginner-friendly programming language that compiles to real JavaScript. No confusing symbols, no scary errors — just code that makes sense.">
 <meta property="og:title" content="E-script — a beginner-friendly programming language">
-<meta property="og:description" content="Learn to code without getting stuck. E-script reads like plain English and compiles straight to JavaScript.">
+<meta property="og:description" content="Learn to code without getting stuck. E-script trims out a lot of what makes JS confusing, then compiles straight to it.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="E-script — a beginner-friendly programming language">
-<meta name="twitter:description" content="Learn to code without getting stuck. E-script reads like plain English and compiles straight to JavaScript.">
+<meta name="twitter:description" content="Learn to code without getting stuck. E-script trims out a lot of what makes JS confusing, then compiles straight to it.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -52,7 +52,6 @@
   .wrap{max-width:var(--max); margin:0 auto; padding:0 28px;}
   :focus-visible{outline:3px solid var(--brand); outline-offset:3px; border-radius:4px;}
 
-  /* ---- nav ---- */
   nav{
     display:flex; align-items:center; justify-content:space-between;
     padding:22px 0;
@@ -68,7 +67,6 @@
   }
   .navlink:hover{color:var(--ink); border-color:var(--ink-soft);}
 
-  /* ---- hero ---- */
   header.hero{padding:64px 0 40px;}
   .eyebrow{
     display:inline-block; font-family:'IBM Plex Mono', monospace; font-size:.78rem;
@@ -115,7 +113,6 @@
   .hint{font-size:.85rem; color:var(--ink-soft); margin-top:6px;}
   .hint code{background:var(--canvas-raised); padding:1px 6px; border-radius:5px; border:1px solid var(--line);}
 
-  /* ---- transpile signature ---- */
   .transpile{
     margin-top:56px; border-radius:var(--radius); overflow:hidden;
     border:1px solid var(--line); background:var(--canvas-raised);
@@ -140,7 +137,6 @@
   @keyframes blink{50%{opacity:0;}}
   @media (prefers-reduced-motion: reduce){ .cursor{animation:none;} }
 
-  /* ---- install methods ---- */
   section.install{padding:72px 0 20px;}
   .section-head{max-width:52ch; margin-bottom:34px;}
   .section-head .eyebrow{margin-bottom:14px;}
@@ -170,7 +166,6 @@
   }
   .copy-btn:hover{background:#2F433C;}
 
-  /* ---- tour ---- */
   section.tour{padding:76px 0;}
   .tour-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:18px; margin-top:30px;}
   @media (max-width:720px){ .tour-grid{grid-template-columns:1fr;} }
@@ -206,9 +201,9 @@
 
 <header class="hero" id="top">
   <div class="wrap">
-    <span class="eyebrow">A beginner-friendly programming language</span>
-    <h1 class="headline">JavaScript, <em>minus the ceremony.</em></h1>
-    <p class="sub">E-script is a small programming language that reads like plain English and turns into real JavaScript underneath. No confusing symbols, no scary error messages — just code that makes sense. <code class="mono">escript build</code> hands you a plain .js file anyone can run.</p>
+    <span class="eyebrow">A beginner programming language</span>
+    <h1 class="headline">JavaScript, <em>Way less confusing.</em></h1>
+    <p class="sub">E-script is a small language that removes alot of what makes JS confusing to begin with. no weird symbols, no scary error messages, just code you can actually follow. <code class="mono">escript build</code> compiles it down to a .js file you can run anywhere.</p>
 
     <div class="download-row">
       <button class="btn-primary" id="primary-download">
@@ -297,7 +292,7 @@ npm link">Copy</button>
       </div>
     </div>
 
-    <p class="hint" style="margin-top:26px;">Once installed: <code>escript run yourfile.es</code> to execute, or <code>escript build yourfile.es</code> to emit plain JS.</p>
+    <p class="hint" style="margin-top:26px;">Once installed: <code>escript run yourfile.es</code> to execute, or <code>escript build yourfile.es</code> to compile it down to plain JS.</p>
   </div>
 </section>
 
@@ -309,12 +304,12 @@ npm link">Copy</button>
     </div>
     <div class="tour-grid">
       <div class="tour-card">
-        <h3>Interpolation, no concatenation</h3>
+        <h3>No more + string mess</h3>
         <pre>let name = "Venny"
 print("Hello, {name}!")</pre>
       </div>
       <div class="tour-card">
-        <h3>Readable booleans</h3>
+        <h3>Booleans you can actually read</h3>
         <pre>let ready = true and not false
 <span class="cm">// same as: true && !false</span></pre>
       </div>
@@ -324,7 +319,7 @@ print("Hello, {name}!")</pre>
 <span class="cm">// implicit return, no braces needed</span></pre>
       </div>
       <div class="tour-card">
-        <h3>Conditions without parens</h3>
+        <h3>Skip the parentheses</h3>
         <pre>if score > 90 {
   print("A")
 } else {
@@ -348,7 +343,6 @@ print("Hello, {name}!")</pre>
 </footer>
 
 <script>
-  // ---- OS-aware primary download button ----
   (function(){
     var ua = navigator.userAgent || '';
     var plat = (navigator.platform || '') + ' ' + ua;
@@ -361,7 +355,6 @@ print("Hello, {name}!")</pre>
 
     if (/Mac/i.test(plat)) {
       var isAppleSilicon = /Mac/.test(plat) && ua.indexOf('Intel') === -1;
-      // best-effort: most modern Macs visiting today are Apple Silicon
       asset = isAppleSilicon ? 'escript-darwin-arm64' : 'escript-darwin-x64';
       text = 'Download for macOS';
       subtext = (isAppleSilicon ? 'Apple Silicon' : 'Intel') + ' · no Node required';
@@ -381,7 +374,6 @@ print("Hello, {name}!")</pre>
     });
   })();
 
-  // ---- tabs ----
   document.querySelectorAll('.tab').forEach(function(tab){
     tab.addEventListener('click', function(){
       document.querySelectorAll('.tab').forEach(function(t){ t.setAttribute('aria-selected', 'false'); });
@@ -391,7 +383,6 @@ print("Hello, {name}!")</pre>
     });
   });
 
-  // ---- copy buttons ----
   document.querySelectorAll('.copy-btn').forEach(function(btn){
     btn.addEventListener('click', function(){
       navigator.clipboard.writeText(btn.dataset.copy).then(function(){
@@ -402,7 +393,6 @@ print("Hello, {name}!")</pre>
     });
   });
 
-  // ---- signature: live transpile typewriter ----
   (function(){
     var src = 'func greet(name) {\n  return "Hi, {name}!"\n}\n\nlet friends = ["Ada", "Grace"]\nfor person in friends {\n  print(greet(person))\n}';
     var out = 'function greet(name) {\n  return `Hi, ${name}!`;\n}\n\nlet friends = ["Ada", "Grace"];\nfor (const person of friends) {\n  console.log(greet(person));\n}';
